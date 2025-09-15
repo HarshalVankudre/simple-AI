@@ -4,6 +4,6 @@ POST http://localhost:3000/api/chat
 Content-Type: application/json
 
 {
-  "prompt": "hi there",
-  "conversationID": "8f14e45f-ea7c-4f2f-bc8e-123456789abc"
+  "prompt": "What is the capital of france",
+  "conversationID": "6b9f5a29-bafd-420f-a619-abe46299fa40"
 }
