@@ -13,7 +13,7 @@ export const chatService = {
    async sendMessage(prompt: string, conversationID: string) : Promise<ChatResponse> {
          const response = await client.responses.create({
             input: prompt,
-            model: "gpt-4o-mini ",
+            model: "gpt-4o-mini",
             temperature: 0.2,
             max_output_tokens: 100,
             previous_response_id: getLastResponseId(conversationID)
