@@ -1,0 +1,9 @@
+
+### Test chat
+POST http://localhost:3000/api/chat
+Content-Type: application/json
+
+{
+  "prompt": "hi there",
+  "conversationID": "8f14e45f-ea7c-4f2f-bc8e-123456789abc"
+}
