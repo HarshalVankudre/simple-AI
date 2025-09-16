@@ -3,10 +3,15 @@ type SendMessagePayload = {
   conversationID: string;
 };
 
+type ApiResponse = {
+  message: string | null;
+  error: string | null;
+};
+
 export const sendMessageToApi = async ({
   prompt,
   conversationID,
-}: SendMessagePayload): Promise<string> => {
+}: SendMessagePayload): Promise<ApiResponse> => {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
@@ -16,14 +21,16 @@ export const sendMessageToApi = async ({
       body: JSON.stringify({ prompt, conversationID }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error("Network response was not ok.");
+      // Directly use the error message from the backend
+      return { message: null, error: data.error || "An unknown error occurred." };
     }
 
-    const data = await response.json();
-    return data.message || "";
+    return { message: data.message || "", error: null };
   } catch (error) {
     console.error("Failed to send message:", error);
-    return "Sorry, something went wrong.";
+    return { message: null, error: "Sorry, something went wrong." };
   }
 };

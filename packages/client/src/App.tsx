@@ -1,41 +1,20 @@
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/hooks/useChat";
-
-// Zod schema for simple, direct validation
-const chatSchema = z.object({
-  prompt: z
-    .string()
-    .min(1, { message: "Prompt is empty." })
-    .max(1000, { message: "Prompt is too long." }),
-});
+import * as React from "react";
 
 function App() {
   const [prompt, setPrompt] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [conversationID] = useState<string>(uuidv4());
-  const { message, isLoading, handleSendMessage } = useChat();
+  const [conversationID, setConversationID] = useState<string>(uuidv4());
+  const { message, error, isLoading, handleSendMessage, setError } = useChat();
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const result = chatSchema.safeParse({ prompt });
-
-    if (!result.success) {
-      // --- Simplified error handling ---
-      const errorMessage = result.error.flatten().fieldErrors.prompt?.[0];
-      setError(errorMessage || "Invalid input.");
-      // ---------------------------------
-      return;
-    }
-
-    setError(null);
-    handleSendMessage(result.data.prompt, conversationID);
-    setPrompt("");
+    handleSendMessage(prompt, conversationID);
   };
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -59,7 +38,15 @@ function App() {
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
-        <Textarea placeholder="Conversation ID" value={conversationID} readOnly />
+        <div className="grid w-full gap-1.5">
+          <Label htmlFor="conversationId">Conversation ID</Label>
+          <Textarea
+            id="conversationId"
+            placeholder="Conversation ID"
+            value={conversationID}
+            onChange={(e) => setConversationID(e.target.value)}
+          />
+        </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
           {isLoading ? "Sending..." : "Send"}
