@@ -5,7 +5,7 @@ import z from "zod";
 const chatSchema = z.object({
     prompt: z.string()
         .trim()
-        .min(1, 'Prompt is required')
+        .min(1, 'Prompt is rquired')
         .max(1000, 'Prompt is too long'),
 
     conversationID: z.string().uuid()

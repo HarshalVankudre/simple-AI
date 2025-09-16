@@ -1,30 +1,76 @@
-import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useChat } from "@/hooks/useChat";
+
+// Zod schema for simple, direct validation
+const chatSchema = z.object({
+  prompt: z
+    .string()
+    .min(1, { message: "Prompt is empty." })
+    .max(1000, { message: "Prompt is too long." }),
+});
 
 function App() {
-  const [message, setMessage] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [conversationID] = useState<string>(uuidv4());
+  const { message, isLoading, handleSendMessage } = useChat();
 
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = chatSchema.safeParse({ prompt });
 
-  useEffect(() => {
-    fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: "what was my previous question",
-        conversationID: conversationID,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message));
-  }, [conversationID]);
+    if (!result.success) {
+      // --- Simplified error handling ---
+      const errorMessage = result.error.flatten().fieldErrors.prompt?.[0];
+      setError(errorMessage || "Invalid input.");
+      // ---------------------------------
+      return;
+    }
 
+    setError(null);
+    handleSendMessage(result.data.prompt, conversationID);
+    setPrompt("");
+  };
 
-  return <p className={"font-bold p-4 text-3xl"}>{message}</p>;
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+    if (error) {
+      setError(null);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-background flex items-center justify-center p-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-4">
+        <div className="grid w-full gap-1.5">
+          <Label htmlFor="prompt">Your Prompt</Label>
+          <Textarea
+            id="prompt"
+            placeholder="Enter your prompt"
+            value={prompt}
+            onChange={handlePromptChange}
+          />
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+
+        <Textarea placeholder="Conversation ID" value={conversationID} readOnly />
+
+        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+          {isLoading ? "Sending..." : "Send"}
+        </Button>
+
+        <div className="p-4 border rounded-md min-h-[12rem]">
+          <p className="whitespace-pre-wrap">{message}</p>
+        </div>
+      </form>
+    </main>
+  );
 }
-
 
 export default App;
