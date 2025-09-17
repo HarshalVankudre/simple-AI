@@ -8,6 +8,21 @@ type ApiResponse = {
   error: string | null;
 };
 
+type DbStatusResponse = {
+  db: "connected" | "disconnected";
+};
+
+export const getDbStatus = async (): Promise<DbStatusResponse> => {
+  try {
+    const response = await fetch("/api/status");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to get DB status:", error);
+    return { db: "disconnected" };
+  }
+};
+
 export const sendMessageToApi = async ({
   prompt,
   conversationID,

@@ -1,14 +1,16 @@
 import type { Request, Response } from "express";
-import { chatService } from "../services/chat.service.ts";
 import z from "zod";
+import { routerService } from "../services/router.service";
+import { chatService } from "../services/chat.service.ts";
 
 const chatSchema = z.object({
-  prompt: z.string()
+  prompt: z
+    .string()
     .trim()
     .min(1, "Prompt is required")
     .max(1000, "Prompt is too long"),
 
-  conversationID: z.string().uuid()
+  conversationID: z.string().uuid(),
 });
 
 export const chatController = {
@@ -17,19 +19,31 @@ export const chatController = {
 
     if (!parseResult.success) {
       // @ts-ignore
-        res.status(400).json({ error: parseResult.error.issues[0].message });
+      res.status(400).json({ error: parseResult.error.issues[0].message });
       return;
     }
 
     try {
       const { prompt, conversationID } = parseResult.data;
 
-      const response = await chatService.sendMessage(prompt, conversationID);
+      const dbResponse = await routerService.route(prompt, conversationID);
 
-      res.json({ message: response.message });
+      if (dbResponse) {
+        res.json({ message: dbResponse.message });
+        return;
+      }
+
+      const chatResponse = await chatService.sendMessage(
+        prompt,
+        conversationID
+      );
+
+      res.json({ message: chatResponse.message });
     } catch (error) {
       console.error("Error:", error);
-      res.status(500).json({ error: "An error occurred while processing your request" });
+      res
+        .status(500)
+        .json({ error: "An error occurred while processing your request" });
     }
-  }
+  },
 };

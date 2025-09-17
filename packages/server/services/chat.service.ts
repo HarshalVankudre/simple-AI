@@ -1,29 +1,21 @@
-import {getLastResponseId, saveResponseId} from "../repositories/conversation.repository.ts";
-import {OpenAI} from "openai";
-
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+import { getLastResponseId, saveResponseId } from "../repositories/conversation.repository.ts";
+import { llm } from "../src/openaiClient.ts";
+import { v4 as uuidv4 } from "uuid";
 
 type ChatResponse = {
-    id: string;
-    message: string;
-}
+  id: string;
+  message: string;
+};
+
 export const chatService = {
-   async sendMessage(prompt: string, conversationID: string) : Promise<ChatResponse> {
-         const response = await client.responses.create({
-            input: prompt,
-            model: "gpt-4.1-nano",
-            temperature: 0.7,
-            max_output_tokens: 1024,
-            previous_response_id: getLastResponseId(conversationID)
-        }
-    );
-    saveResponseId(conversationID, response.id)
-       return {
-        id: response.id,
-        message: response.output_text
-       };
-    }
-    //scsdsd
+  async sendMessage(prompt: string, conversationID: string): Promise<ChatResponse> {
+    const response = await llm.invoke(prompt);
+    const responseId = uuidv4();
+    await saveResponseId(conversationID, responseId);
+
+    return {
+      id: responseId,
+      message: response.content.toString(),
+    };
+  },
 };
