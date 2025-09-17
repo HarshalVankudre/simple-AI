@@ -13,9 +13,9 @@ export const chatService = {
    async sendMessage(prompt: string, conversationID: string) : Promise<ChatResponse> {
          const response = await client.responses.create({
             input: prompt,
-            model: "gpt-4o-mini",
-            temperature: 0.2,
-            max_output_tokens: 100,
+            model: "gpt-4.1-nano",
+            temperature: 0.7,
+            max_output_tokens: 1024,
             previous_response_id: getLastResponseId(conversationID)
         }
     );
