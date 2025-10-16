@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import z from "zod";
-import { routerService } from "../services/router.service";
 import { chatService } from "../services/chat.service.ts";
 
 const chatSchema = z.object({
@@ -25,13 +24,6 @@ export const chatController = {
 
     try {
       const { prompt, conversationID } = parseResult.data;
-
-      const dbResponse = await routerService.route(prompt, conversationID);
-
-      if (dbResponse) {
-        res.json({ message: dbResponse.message });
-        return;
-      }
 
       const chatResponse = await chatService.sendMessage(
         prompt,
